@@ -1,0 +1,153 @@
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+class AuthProvider extends ChangeNotifier {
+  FirebaseAuth? _firebaseAuth;
+
+  bool _isAuthenticated = false;
+  bool _isPremium = false;
+  String? _userName;
+  String? _uid;
+
+  AuthProvider() {
+    try {
+      _firebaseAuth = FirebaseAuth.instance;
+    } catch (_) {
+      debugPrint("Firebase not initialized yet. Using local auth.");
+    }
+    _loadState();
+  }
+
+  Future<void> _loadState() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Check Firebase Auth state first
+    final currentUser = _firebaseAuth?.currentUser;
+    if (currentUser != null) {
+      _isAuthenticated = true;
+      _uid = currentUser.uid;
+      _userName = currentUser.displayName ?? currentUser.email?.split('@').first;
+    } else {
+      _isAuthenticated = false;
+      _uid = null;
+    }
+
+    _isPremium = prefs.getBool('auth_is_premium') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> _saveState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('auth_is_authenticated', _isAuthenticated);
+    await prefs.setBool('auth_is_premium', _isPremium);
+    if (_userName != null) {
+      await prefs.setString('auth_user_name', _userName!);
+    } else {
+      await prefs.remove('auth_user_name');
+    }
+  }
+
+  bool get isAuthenticated => _isAuthenticated;
+  bool get isPremium => _isPremium;
+  String? get userName => _userName;
+  String? get uid => _uid;
+
+  // Firebase Real Login
+  Future<void> login(String email, String password) async {
+    if (_firebaseAuth == null) {
+      throw Exception("Firebase is not initialized. Please ensure google-services.json is configured.");
+    }
+
+    try {
+      final credential = await _firebaseAuth!.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      _isAuthenticated = true;
+      _uid = credential.user?.uid;
+      _userName = credential.user?.displayName ?? email.split('@').first;
+      await _saveState();
+      notifyListeners();
+    } catch (e) {
+      throw Exception(e.toString()); // Pass the real Firebase error up to the UI
+    }
+  }
+
+  // Google Sign In
+  Future<void> signInWithGoogle() async {
+    if (_firebaseAuth == null) {
+      throw Exception("Firebase is not initialized. Please ensure google-services.json is configured.");
+    }
+
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        return; // User canceled the sign-in flow
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _firebaseAuth!.signInWithCredential(credential);
+
+      _isAuthenticated = true;
+      _uid = userCredential.user?.uid;
+      _userName = userCredential.user?.displayName ?? googleUser.email.split('@').first;
+      await _saveState();
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Google Sign-In Failed: \${e.toString()}');
+    }
+  }
+
+  Future<void> signup(String email, String password, String name) async {
+    if (_firebaseAuth == null) {
+      throw Exception("Firebase is not initialized. Please ensure google-services.json is configured.");
+    }
+
+    try {
+      final credential = await _firebaseAuth!.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Update display name
+      await credential.user?.updateDisplayName(name);
+
+      _isAuthenticated = true;
+      _uid = credential.user?.uid;
+      _userName = name;
+      _isPremium = false;
+      await _saveState();
+      notifyListeners();
+    } catch (e) {
+      throw Exception(e.toString()); // Pass the real Firebase error up to the UI
+    }
+  }
+
+  void logout() async {
+    try {
+      await _firebaseAuth?.signOut();
+    } catch (_) {}
+
+    _isAuthenticated = false;
+    _userName = null;
+    _uid = null;
+    _isPremium = false;
+    await _saveState();
+    notifyListeners();
+  }
+
+  void upgradeToPremium() async {
+    _isPremium = true;
+    await _saveState();
+    notifyListeners();
+  }
+}
