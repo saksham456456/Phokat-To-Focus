@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
     <application
-        android:label="study_planner"
+        android:label="Phokat-to-Focus"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

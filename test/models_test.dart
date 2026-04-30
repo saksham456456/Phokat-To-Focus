@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:study_planner/core/models/models.dart';
+import 'package:phokat_to_focus/core/models/models.dart';
 
 void main() {
   group('UserStats Model Tests', () {

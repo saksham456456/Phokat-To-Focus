@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../../planner/providers/planner_provider.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
+import '../../../core/widgets/app_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -106,11 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.menu_book_rounded,
-                    size: 80,
-                    color: Theme.of(context).primaryColor,
-                  ),
+                  const AppLogo(size: 100),
                   const SizedBox(height: 32),
                   Text(
                     _isLogin ? 'Welcome back' : 'Create an account',

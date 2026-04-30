@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../main_navigation.dart';
+import '../../../core/widgets/app_logo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -46,7 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   _buildSlide(
                     title: 'Plan smarter, not harder',
                     subtitle: 'Your personal AI-powered study companion',
-                    icon: Icons.calendar_month_rounded,
+                    logo: const AppLogo(size: 120, showText: false),
                   ),
                   _buildSlide(
                     title: 'Stay focused with AI',
@@ -111,14 +112,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildSlide({
     required String title,
     required String subtitle,
-    required IconData icon,
+    IconData? icon,
+    Widget? logo,
   }) {
     return Padding(
       padding: const EdgeInsets.all(40.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          if (logo != null) logo else Icon(
             icon,
             size: 100,
             color: Theme.of(context).primaryColor,

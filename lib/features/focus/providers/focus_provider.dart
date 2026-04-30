@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 enum FocusState { idle, running, paused, finished }
 
 class FocusProvider extends ChangeNotifier {
-  static const platform = MethodChannel('com.example.study_planner/strict_mode');
+  static const platform = MethodChannel('com.example.phokat_to_focus/strict_mode');
 
   FocusState _state = FocusState.idle;
   int _durationMinutes = 25;

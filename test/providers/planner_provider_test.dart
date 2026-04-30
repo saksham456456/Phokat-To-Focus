@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:study_planner/features/planner/providers/planner_provider.dart';
-import 'package:study_planner/core/models/models.dart';
+import 'package:phokat_to_focus/features/planner/providers/planner_provider.dart';
+import 'package:phokat_to_focus/core/models/models.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 

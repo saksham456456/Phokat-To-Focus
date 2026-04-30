@@ -5,6 +5,7 @@ import 'features/planner/providers/planner_provider.dart';
 import 'features/focus/providers/focus_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'main_navigation.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/theme_provider.dart';
@@ -20,11 +21,11 @@ void main() async {
     debugPrint('Firebase initialization failed: \$e. App will run in offline/local mode.');
   }
 
-  runApp(const StudyPlannerApp());
+  runApp(const PhokatToFocusApp());
 }
 
-class StudyPlannerApp extends StatelessWidget {
-  const StudyPlannerApp({super.key});
+class PhokatToFocusApp extends StatelessWidget {
+  const PhokatToFocusApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class StudyPlannerApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            title: 'Study Planner',
+            title: 'Phokat-to-Focus',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,

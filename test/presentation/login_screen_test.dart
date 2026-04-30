@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:study_planner/features/auth/presentation/login_screen.dart';
-import 'package:study_planner/features/auth/providers/auth_provider.dart';
+import 'package:phokat_to_focus/features/auth/presentation/login_screen.dart';
+import 'package:phokat_to_focus/features/auth/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
