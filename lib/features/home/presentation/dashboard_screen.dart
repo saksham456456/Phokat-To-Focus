@@ -13,6 +13,9 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.userName ?? 'Student';
+    
     return Scaffold(
       body: SafeArea(
         child: Consumer<PlannerProvider>(
@@ -32,7 +35,7 @@ class DashboardScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good evening, Alex 👋',
+                          'Good evening, $userName 👋',
                           style: Theme.of(context).textTheme.displaySmall,
                         ),
                         const SizedBox(height: 24),

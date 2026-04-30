@@ -88,7 +88,7 @@ class RewardsScreen extends StatelessWidget {
         ),
         subtitle: Text(isUnlocked ? 'Unlocked' : 'Requires Level ${requiredXp ~/ 100 + 1}'),
         trailing: isUnlocked
-            ? Icon(Icons.check_circle, color: Theme.of(context).successColor)
+            ? const Icon(Icons.check_circle, color: Color(0xFF22C55E))
             : const Icon(Icons.lock, color: Colors.grey),
       ),
     );

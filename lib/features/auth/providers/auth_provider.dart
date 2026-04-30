@@ -29,23 +29,23 @@ class AuthProvider extends ChangeNotifier {
       _isAuthenticated = true;
       _uid = currentUser.uid;
       _userName = currentUser.displayName ?? currentUser.email?.split('@').first;
+      _isPremium = prefs.getBool('auth_is_premium_\$_uid') ?? false;
     } else {
       _isAuthenticated = false;
       _uid = null;
+      _isPremium = false;
     }
 
-    _isPremium = prefs.getBool('auth_is_premium') ?? false;
     notifyListeners();
   }
 
   Future<void> _saveState() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('auth_is_authenticated', _isAuthenticated);
-    await prefs.setBool('auth_is_premium', _isPremium);
-    if (_userName != null) {
-      await prefs.setString('auth_user_name', _userName!);
-    } else {
-      await prefs.remove('auth_user_name');
+    if (_uid != null) {
+      await prefs.setBool('auth_is_premium_\$_uid', _isPremium);
+      if (_userName != null) {
+        await prefs.setString('auth_user_name_\$_uid', _userName!);
+      }
     }
   }
 

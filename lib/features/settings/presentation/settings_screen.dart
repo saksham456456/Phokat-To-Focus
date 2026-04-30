@@ -6,6 +6,7 @@ import '../../premium/presentation/paywall_screen.dart';
 import '../../focus/providers/focus_provider.dart';
 import '../../planner/providers/planner_provider.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/app_logo.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -25,10 +26,7 @@ class SettingsScreen extends StatelessWidget {
               // Profile Section
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 32,
-                    child: Icon(Icons.person, size: 32),
-                  ),
+                  const AppLogo(size: 64, showText: false),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -121,6 +119,7 @@ class SettingsScreen extends StatelessWidget {
                   onPressed: () {
                     auth.logout();
                     Provider.of<PlannerProvider>(context, listen: false).clearData();
+                    Provider.of<FocusProvider>(context, listen: false).reset();
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                       (route) => false,

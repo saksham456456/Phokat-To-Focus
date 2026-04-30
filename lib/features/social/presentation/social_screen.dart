@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class SocialScreen extends StatelessWidget {
   const SocialScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.userName ?? 'User';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Social & Rooms'),
@@ -39,7 +44,7 @@ class SocialScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          _buildLeaderboardItem(context, 1, 'Alex (You)', 120, true),
+          _buildLeaderboardItem(context, 1, '$userName (You)', 120, true),
           _buildLeaderboardItem(context, 2, 'Sam', 95, false),
           _buildLeaderboardItem(context, 3, 'Jordan', 80, false),
         ],

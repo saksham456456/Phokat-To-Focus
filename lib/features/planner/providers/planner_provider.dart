@@ -81,22 +81,23 @@ class PlannerProvider extends ChangeNotifier {
           _tasks = [];
         }
       } catch (e) {
-        debugPrint("Failed to load from Firebase: \$e");
+        debugPrint("Failed to load from Firebase: $e");
         _tasks = [];
         _stats = UserStats();
       }
     } else {
       // Offline / Unauthenticated fallback
       final prefs = await SharedPreferences.getInstance();
+      final uid = user?.uid ?? 'anonymous';
 
-      final statsJson = prefs.getString('user_stats');
+      final statsJson = prefs.getString('user_stats_$uid');
       if (statsJson != null) {
         _stats = UserStats.fromJson(jsonDecode(statsJson));
       } else {
         _stats = UserStats(streak: 0, xp: 0, totalFocusMinutes: 0);
       }
 
-      final tasksJson = prefs.getStringList('user_tasks');
+      final tasksJson = prefs.getStringList('user_tasks_$uid');
       if (tasksJson != null) {
         _tasks = tasksJson.map((t) => Task.fromJson(jsonDecode(t))).toList();
       } else {
@@ -120,31 +121,31 @@ class PlannerProvider extends ChangeNotifier {
   }
 
   Future<void> _saveData() async {
-    // Save Locally
+    final user = _auth?.currentUser;
+    final uid = user?.uid ?? 'anonymous';
+    
+    // Save Locally (Namespaced by user)
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_stats', jsonEncode(_stats.toJson()));
+    await prefs.setString('user_stats_$uid', jsonEncode(_stats.toJson()));
 
     final tasksJsonList = _tasks.map((t) => jsonEncode(t.toJson())).toList();
-    await prefs.setStringList('user_tasks', tasksJsonList);
+    await prefs.setStringList('user_tasks_$uid', tasksJsonList);
 
     // Sync with Firebase (if logged in)
-    if (_auth != null && _firestore != null) {
+    if (_auth != null && _firestore != null && user != null) {
       try {
-        final user = _auth!.currentUser;
-        if (user != null) {
-          // We do not await this, so it doesn't block the UI
-          _firestore!.collection('users').doc(user.uid).set({
-            'stats': _stats.toJson(),
-          }, SetOptions(merge: true));
+        // We do not await this, so it doesn't block the UI
+        _firestore!.collection('users').doc(user.uid).set({
+          'stats': _stats.toJson(),
+        }, SetOptions(merge: true));
 
-          // Syncing tasks batch (Simplified for MVP)
-          final batch = _firestore!.batch();
-          for (var task in _tasks) {
-            final docRef = _firestore!.collection('users').doc(user.uid).collection('tasks').doc(task.id);
-            batch.set(docRef, task.toJson());
-          }
-          batch.commit();
+        // Syncing tasks batch (Simplified for MVP)
+        final batch = _firestore!.batch();
+        for (var task in _tasks) {
+          final docRef = _firestore!.collection('users').doc(user.uid).collection('tasks').doc(task.id);
+          batch.set(docRef, task.toJson());
         }
+        batch.commit();
       } catch (e) {
         debugPrint("Firebase sync failed (Likely not configured yet): $e");
       }
