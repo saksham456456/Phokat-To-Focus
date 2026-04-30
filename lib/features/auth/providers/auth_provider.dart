@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthProvider extends ChangeNotifier {
   FirebaseAuth? _firebaseAuth;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool _isAuthenticated = false;
   bool _isPremium = false;
@@ -29,7 +30,7 @@ class AuthProvider extends ChangeNotifier {
       _isAuthenticated = true;
       _uid = currentUser.uid;
       _userName = currentUser.displayName ?? currentUser.email?.split('@').first;
-      _isPremium = prefs.getBool('auth_is_premium_\$_uid') ?? false;
+      _isPremium = prefs.getBool('auth_is_premium_$_uid') ?? false;
     } else {
       _isAuthenticated = false;
       _uid = null;
@@ -42,9 +43,9 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _saveState() async {
     final prefs = await SharedPreferences.getInstance();
     if (_uid != null) {
-      await prefs.setBool('auth_is_premium_\$_uid', _isPremium);
+      await prefs.setBool('auth_is_premium_$_uid', _isPremium);
       if (_userName != null) {
-        await prefs.setString('auth_user_name_\$_uid', _userName!);
+        await prefs.setString('auth_user_name_$_uid', _userName!);
       }
     }
   }
@@ -57,7 +58,14 @@ class AuthProvider extends ChangeNotifier {
   // Firebase Real Login
   Future<void> login(String email, String password) async {
     if (_firebaseAuth == null) {
-      throw Exception("Firebase is not initialized. Please ensure google-services.json is configured.");
+      // Fallback for Demo/Offline Mode
+      debugPrint("Firebase not found. Logging in locally for demo.");
+      _isAuthenticated = true;
+      _uid = "local_user";
+      _userName = email.split('@').first;
+      await _saveState();
+      notifyListeners();
+      return;
     }
 
     try {
@@ -71,19 +79,24 @@ class AuthProvider extends ChangeNotifier {
       await _saveState();
       notifyListeners();
     } catch (e) {
-      throw Exception(e.toString()); // Pass the real Firebase error up to the UI
+      throw Exception(e.toString());
     }
   }
 
   // Google Sign In
   Future<void> signInWithGoogle() async {
     if (_firebaseAuth == null) {
-      throw Exception("Firebase is not initialized. Please ensure google-services.json is configured.");
+      // Fallback for Demo
+      _isAuthenticated = true;
+      _uid = "local_google_user";
+      _userName = "Guest User";
+      await _saveState();
+      notifyListeners();
+      return;
     }
 
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
         return; // User canceled the sign-in flow
@@ -103,13 +116,20 @@ class AuthProvider extends ChangeNotifier {
       await _saveState();
       notifyListeners();
     } catch (e) {
-      throw Exception('Google Sign-In Failed: \${e.toString()}');
+      throw Exception('Google Sign-In Failed: ${e.toString()}');
     }
   }
 
   Future<void> signup(String email, String password, String name) async {
     if (_firebaseAuth == null) {
-      throw Exception("Firebase is not initialized. Please ensure google-services.json is configured.");
+      // Fallback for Demo
+      _isAuthenticated = true;
+      _uid = "local_user";
+      _userName = name;
+      _isPremium = false;
+      await _saveState();
+      notifyListeners();
+      return;
     }
 
     try {
@@ -128,20 +148,20 @@ class AuthProvider extends ChangeNotifier {
       await _saveState();
       notifyListeners();
     } catch (e) {
-      throw Exception(e.toString()); // Pass the real Firebase error up to the UI
+      throw Exception(e.toString());
     }
   }
 
   void logout() async {
     try {
       await _firebaseAuth?.signOut();
+      await _googleSignIn.signOut();
     } catch (_) {}
 
     _isAuthenticated = false;
     _userName = null;
     _uid = null;
     _isPremium = false;
-    await _saveState();
     notifyListeners();
   }
 
